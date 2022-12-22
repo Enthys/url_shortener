@@ -1,0 +1,21 @@
+version: "3.7"
+
+volumes:
+  database-vol:
+
+services:
+  app:
+    build:
+      context: .
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "8000:80"
+
+  database:
+    image: redis:7-alpine
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - database-vol:/data
+
+
