@@ -9,10 +9,10 @@ func (ErrorLinkNotFound) Error() string {
 	return "could not find link"
 }
 
-type ErrorPathNotFound struct {
+type ErrorIDNotFound struct {
 }
 
-func (ErrorPathNotFound) Error() string {
+func (ErrorIDNotFound) Error() string {
 	return "could not find path of link"
 }
 
@@ -24,10 +24,10 @@ func (e ErrorLinkSaveFailure) Error() string {
 	return fmt.Sprintf("failed to store the link. Error %s", e.Err.Error())
 }
 
-type ErrorPathSaveFailure struct {
+type ErrorIDSaveFailure struct {
 	Err error
 }
 
-func (e ErrorPathSaveFailure) Error() string {
+func (e ErrorIDSaveFailure) Error() string {
 	return fmt.Sprintf("failed to store the path. Error %s", e.Err.Error())
 }

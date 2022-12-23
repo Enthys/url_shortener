@@ -23,7 +23,7 @@ func (l *linkService) StoreLink(id, link string) (string, error) {
 	existingId, err := l.repository.GetLinkId(link)
 	if err != nil {
 		switch err.(type) {
-		case repository.ErrorPathNotFound:
+		case repository.ErrorIDNotFound:
 			break
 		}
 	}

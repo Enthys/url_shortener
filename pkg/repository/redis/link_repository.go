@@ -7,11 +7,11 @@ import (
 	"os"
 
 	"github.com/Enthys/url_shortener/pkg/repository"
-	redis_pkg "github.com/go-redis/redis/v9"
+	redisPkg "github.com/go-redis/redis/v9"
 )
 
 type redisRepository struct {
-	client *redis_pkg.Client
+	client *redisPkg.Client
 }
 
 // generateConfig creates a configuration with provides details on how to connect to the Redis cache.
@@ -21,7 +21,7 @@ type redisRepository struct {
 // If either `DATABASE_HOST` or `DATABASE_PASS` are not provided a generic `errors.Error` error will be returned.
 //
 // If no `DATABASE_PASS` is provided no password will be used for the connection to the Redis cache.
-func generateConfig() (*redis_pkg.Options, error) {
+func generateConfig() (*redisPkg.Options, error) {
 	var host, port string
 	if host = os.Getenv("DATABASE_HOST"); host == "" {
 		return nil, errors.New("environment variable 'DATABASE_HOST' is missing")
@@ -31,7 +31,7 @@ func generateConfig() (*redis_pkg.Options, error) {
 		return nil, errors.New("environment variable 'DATABASE_PORT' is missing")
 	}
 
-	return &redis_pkg.Options{
+	return &redisPkg.Options{
 		Addr:     fmt.Sprintf("%s:%s", host, port),
 		Password: os.Getenv("DATABASE_PASS"),
 	}, nil
@@ -43,7 +43,7 @@ func NewRedisRepository() (repository.LinkRepository, error) {
 		return nil, fmt.Errorf("failed to create connection to Redis. Error: %w", err)
 	}
 
-	client := redis_pkg.NewClient(config)
+	client := redisPkg.NewClient(config)
 	return &redisRepository{
 		client: client,
 	}, nil
@@ -65,7 +65,7 @@ func generateLinkKey(link string) string {
 func (r *redisRepository) GetById(id string) (string, error) {
 	link, err := r.client.Get(context.Background(), generateIdKey(id)).Result()
 	if err != nil {
-		if errors.Is(err, redis_pkg.Nil) {
+		if errors.Is(err, redisPkg.Nil) {
 			return "", repository.ErrorLinkNotFound{}
 		} else {
 			return "", fmt.Errorf("retrieval of link by id failed. Error: %w", err)
@@ -80,15 +80,15 @@ func (r *redisRepository) GetById(id string) (string, error) {
 
 // GetLinkId retrieves from the Redis storage the ID of the given link if such is found.
 //
-// If no record is found for the given link then a `repository.ErrorPathNotFound` will be returned as the second
+// If no record is found for the given link then a `repository.ErrorIDNotFound` will be returned as the second
 // argument.
 //
 // If the retrieval of the record fails a generic `errors.Error` will be returned.
 func (r *redisRepository) GetLinkId(link string) (string, error) {
 	id, err := r.client.Get(context.Background(), generateLinkKey(link)).Result()
 	if err != nil {
-		if errors.Is(err, redis_pkg.Nil) {
-			return "", repository.ErrorPathNotFound{}
+		if errors.Is(err, redisPkg.Nil) {
+			return "", repository.ErrorIDNotFound{}
 		} else {
 			return "", fmt.Errorf("retrieval of link path failed. Error: %w", err)
 		}
@@ -117,7 +117,7 @@ func (r *redisRepository) StoreLink(id, link string) error {
 
 	_, err = r.client.Set(context.Background(), generateLinkKey(link), id, 0).Result()
 	if err != nil {
-		saveErr := repository.ErrorPathSaveFailure{Err: err}
+		saveErr := repository.ErrorIDSaveFailure{Err: err}
 
 		r.client.Del(context.Background(), generateLinkKey(link))
 
