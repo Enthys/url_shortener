@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Link Compactor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
+    <style>
+        #short-link {
+            width:100%;
+            border-radius: 3px;
+            background-color: white;
+            border: 1px solid gray;
+            padding: 4px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Link Compactor</h1>
+    <input id="link" type="url" required>
+    <button id="create-link">Create link</button>
+    <div id="short-link"></div>
+    <ul id="previous-links"></ul>
+
+    <script>
+        function initHistory() {
+            if (localStorage.getItem('previous-links') === null) {
+                localStorage.setItem('previous-links', JSON.stringify({}));
+            }
+        }
+
+        function addPreviousLink(link, short) {
+            const previousLinks = JSON.parse(localStorage.getItem('previous-links'));
+            previousLinks[link] = short;
+            localStorage.setItem('previous-links', JSON.stringify(previousLinks));
+        }
+
+        function linkExists(link) {
+             return JSON.parse(localStorage.getItem('previous-links'))[link] !== undefined;
+        }
+
+        function renderHistory() {
+            const previousLinksList = document.getElementById('previous-links');
+            const history = JSON.parse(localStorage.getItem('previous-links'));
+            Object.keys(history).forEach((key) => {
+                const entry = document.createElement("li");
+                entry.appendChild(document.createTextNode(`${key} : ${history[key]}`))
+                previousLinksList.prepend(entry);
+            })
+        }
+
+        initHistory();
+        renderHistory();
+
+        const btn = document.getElementById('create-link');
+        const link = document.getElementById('link');
+        const shortLink = document.getElementById('short-link');
+        const previousLinksList = document.getElementById('previous-links');
+
+        btn.onclick = () => {
+            const val = link.value;
+            fetch("/", {
+                method: "POST",
+                headers: {
+                    'content-type': 'application/json',
+                },
+                body: JSON.stringify({link: val}),
+            }).then(resp => resp.json()).then((respData) => {
+                if (respData.error !== undefined) {
+                    alert(respData.error);
+                    return;
+                }
+
+                const generatedLink = `${window.location.origin}/${respData.id}`;
+                if (!linkExists(generatedLink)) {
+                    shortLink.innerText = generatedLink;
+                    const entry = document.createElement("li");
+                    entry.appendChild(document.createTextNode(`${val} : ${generatedLink}`))
+                    previousLinksList.prepend(entry);
+                    addPreviousLink(val, generatedLink);
+                }
+            })
+        }
+    </script>
+</body>
+</html>
