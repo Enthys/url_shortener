@@ -37,6 +37,8 @@ func generateConfig() (*redisPkg.Options, error) {
 	}, nil
 }
 
+// NewRedisRepository creates a new repository which works with Redis. It uses the `generateConfig` function to generate
+// the configuration for the connection to the Redis server.
 func NewRedisRepository() (repository.LinkRepository, error) {
 	config, err := generateConfig()
 	if err != nil {
@@ -49,10 +51,12 @@ func NewRedisRepository() (repository.LinkRepository, error) {
 	}, nil
 }
 
+// generateIdKey generates the key underwhich links are stored.
 func generateIdKey(id string) string {
 	return fmt.Sprintf("id_%s", id)
 }
 
+// generateLinkKey generates the key underwhich the id of the given link is stored.
 func generateLinkKey(link string) string {
 	return fmt.Sprintf("link_%s", link)
 }
@@ -68,11 +72,8 @@ func (r *redisRepository) GetById(id string) (string, error) {
 		if errors.Is(err, redisPkg.Nil) {
 			return "", repository.ErrorLinkNotFound{}
 		} else {
-			return "", fmt.Errorf("retrieval of link by id failed. Error: %w", err)
+			return "", repository.ErrorFailedRetrieval{Err: err}
 		}
-	}
-
-	if link == "" {
 	}
 
 	return link, nil
@@ -90,7 +91,7 @@ func (r *redisRepository) GetLinkId(link string) (string, error) {
 		if errors.Is(err, redisPkg.Nil) {
 			return "", repository.ErrorIDNotFound{}
 		} else {
-			return "", fmt.Errorf("retrieval of link path failed. Error: %w", err)
+			return "", repository.ErrorFailedRetrieval{Err: err}
 		}
 	}
 
@@ -102,12 +103,13 @@ func (r *redisRepository) GetLinkId(link string) (string, error) {
 // The order in which they are stored is the record by which to retrieve the link and then the record through which to
 // reuse link ids. The keys stored in the Redis cache are in the form of:
 //
-//	id_{link_hash}: https://example.com
+//	id_{link_hash}: {link}
 //	link_{link}: {link_hash}
 //
 // If the insertion of the link key fails then a `repository.ErrorLinkSaveFailure` will be returned.
 //
-// If the insertion of the link lookup key fails then a rollback will be attempted.
+// If the insertion of the link lookup key fails then a rollback will be attempted and a `repository.ErrorIDSaveFailure`
+// error will be returned.
 func (r *redisRepository) StoreLink(id, link string) error {
 	// Storing the link record first due to it being with higher priority
 	_, err := r.client.Set(context.Background(), generateIdKey(id), link, 0).Result()

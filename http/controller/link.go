@@ -2,12 +2,13 @@ package controller
 
 import (
 	"fmt"
-	"github.com/Enthys/url_shortener/pkg/repository"
-	"github.com/Enthys/url_shortener/pkg/services"
-	"github.com/labstack/echo/v4"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/Enthys/url_shortener/pkg/repository"
+	"github.com/Enthys/url_shortener/pkg/services"
+	"github.com/labstack/echo/v4"
 )
 
 type LinkController struct {
@@ -20,7 +21,7 @@ func NewLinkController(linkService services.LinkService) *LinkController {
 	}
 }
 
-// SetupRoutes adds the routes which the controller will use to the provided `echo.Echo` object
+// SetupRoutes adds the routes which the controller will use to the provided `echo.Echo` instance.
 func (l *LinkController) SetupRoutes(router *echo.Echo) {
 	router.GET("/", l.HomePage)
 	router.GET("/:id", l.RedirectToLink)
@@ -44,7 +45,7 @@ func (l *LinkController) HomePage(c echo.Context) error {
 	return err
 }
 
-// RedirectToLink accepts redirect the user to the appropriate link if the id matches a link stored in the database
+// RedirectToLink accepts redirect the user to the appropriate link if the id matches a link stored in the database.
 func (l *LinkController) RedirectToLink(c echo.Context) error {
 	linkId := c.Param("id")
 	link, err := l.linkService.GetLinkFromId(linkId)
