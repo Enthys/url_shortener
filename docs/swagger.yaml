@@ -1,0 +1,78 @@
+definitions:
+  controller.CreateLinkDTO:
+    properties:
+      link:
+        example: https://example.com
+        type: string
+    type: object
+  controller.ErrorResponseDTO:
+    properties:
+      error:
+        example: something went wrong
+        type: string
+    type: object
+  controller.LinkCreatedDTO:
+    properties:
+      id:
+        example: the-id-of-the-short-link
+        type: string
+    type: object
+info:
+  contact: {}
+  title: URL Shortener
+paths:
+  /:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create new short link
+        in: body
+        name: link
+        required: true
+        schema:
+          $ref: '#/definitions/controller.CreateLinkDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.LinkCreatedDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponseDTO'
+      summary: create a new short link and receive the id of the shortened link
+      tags:
+      - links
+  /{id}:
+    get:
+      parameters:
+      - description: the-id-of-the-short-link
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "302":
+          description: redirected
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controller.ErrorResponseDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponseDTO'
+      summary: given an id of a shortened link it redirects to the link corresponding
+        to the id.
+      tags:
+      - links
+swagger: "2.0"

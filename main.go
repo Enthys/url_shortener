@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	_ "github.com/Enthys/url_shortener/docs"
 	"github.com/Enthys/url_shortener/http/controller"
 	"github.com/Enthys/url_shortener/pkg"
 	"github.com/Enthys/url_shortener/pkg/repository"
@@ -11,6 +12,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 // createLinkRepository creates a `repository.LinkRepository` instance which works with the said `DATABASE` type.
@@ -33,6 +35,7 @@ func createLinkRepository() (repository.LinkRepository, error) {
 	}
 }
 
+// @title URL Shortener
 func main() {
 	// Load the .env if such exists
 	if err := godotenv.Load(); err != nil {
@@ -55,6 +58,9 @@ func main() {
 	server := echo.New()
 	server.Logger.SetLevel(log.DEBUG)
 	linkController.SetupRoutes(server)
+
+	// Swagger setup
+	server.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	// Server start
 	server.Logger.Fatal(server.Start(":80"))

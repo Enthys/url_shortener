@@ -46,6 +46,14 @@ func (l *LinkController) HomePage(c echo.Context) error {
 }
 
 // RedirectToLink accepts redirect the user to the appropriate link if the id matches a link stored in the database.
+//
+//	@Summary given an id of a shortened link it redirects to the link corresponding to the id.
+//	@Param	id	path	string	true	"the-id-of-the-short-link"
+//	@Tags	links
+//	@Success	302 {string}	string "redirected"
+//	@Failure	404	{object}	ErrorResponseDTO
+//	@Failure	500 {object}	ErrorResponseDTO
+//	@Router /{id} [get]
 func (l *LinkController) RedirectToLink(c echo.Context) error {
 	linkId := c.Param("id")
 	link, err := l.linkService.GetLinkFromId(linkId)
@@ -75,19 +83,29 @@ func (l *LinkController) RedirectToLink(c echo.Context) error {
 }
 
 type CreateLinkDTO struct {
-	Link string `json:"link"`
+	Link string `json:"link" example:"https://example.com"`
 }
 
 type LinkCreatedDTO struct {
-	ID string `json:"id"`
+	ID string `json:"id" example:"the-id-of-the-short-link"`
 }
 
-type BadRequestDTO struct {
-	Error string `json:"error"`
+type ErrorResponseDTO struct {
+	Error string `json:"error" example:"something went wrong"`
 }
 
 // CreateLink accepts requests for creating a new shortened link for given link. The provided link has to begin with
 // either `http://` or `https://` due to the way echo handles its redirects.
+//
+//	@Summary	create a new short link and receive the id of the shortened link
+//	@Tags	links
+//	@Accept	json
+//	@Produce json
+//	@Param	link	body	CreateLinkDTO	true	"Create new short link"
+//	@Success 201 {object} LinkCreatedDTO
+//	@Failure 400 {object} ErrorResponseDTO
+//	@Failure 500 {object} ErrorResponseDTO
+//	@Router / [post]
 func (l *LinkController) CreateLink(c echo.Context) error {
 	var dto CreateLinkDTO
 	if err := c.Bind(&dto); err != nil {
@@ -97,7 +115,7 @@ func (l *LinkController) CreateLink(c echo.Context) error {
 	if !strings.HasPrefix(dto.Link, "http://") && !strings.HasPrefix(dto.Link, "https://") {
 		return c.JSON(
 			http.StatusBadRequest,
-			BadRequestDTO{Error: "the provided link should begin with either 'http://' or 'https://'"},
+			ErrorResponseDTO{Error: "the provided link should begin with either 'http://' or 'https://'"},
 		)
 	}
 
