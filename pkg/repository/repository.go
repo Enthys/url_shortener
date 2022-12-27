@@ -1,6 +1,11 @@
 package repository
 
 type LinkRepository interface {
+	// GenerateId creates a unique id which could be used for a new link.
+	//
+	// If the database fails to create a unique ID a `errors.ErrorIDGenerationFailed` error will be returned
+	GenerateId() (string, error)
+
 	// StoreLink adds the link to the database under the provided id.
 	//
 	// If the database fails to store the link under the database a `errors.ErrorLinkSaveFailure` should be returned.

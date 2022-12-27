@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"internal/itoa"
 	"os"
 
+	"github.com/Enthys/url_shortener/pkg"
 	"github.com/Enthys/url_shortener/pkg/repository"
 	redisPkg "github.com/go-redis/redis/v9"
 )
@@ -59,6 +61,15 @@ func generateIdKey(id string) string {
 // generateLinkKey generates the key underwhich the id of the given link is stored.
 func generateLinkKey(link string) string {
 	return fmt.Sprintf("link_%s", link)
+}
+
+func (r *redisRepository) GenerateId() (string, error) {
+	val, err := r.client.Incr(context.Background(), "id_gen").Result()
+	if err != nil {
+		return "", repository.ErrorIDGenerationFailed{}
+	}
+
+	return itoa.Itoa(int(val)) + pkg.RandomString(16), nil
 }
 
 // GetById retrieves from the Redis storage the link which corresponds to the given ID if such exists.

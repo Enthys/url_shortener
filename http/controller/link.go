@@ -12,10 +12,10 @@ import (
 )
 
 type LinkController struct {
-	linkService services.LinkService
+	linkService services.LinkServiceInterface
 }
 
-func NewLinkController(linkService services.LinkService) *LinkController {
+func NewLinkController(linkService services.LinkServiceInterface) *LinkController {
 	return &LinkController{
 		linkService: linkService,
 	}

@@ -1,8 +1,7 @@
 package services
 
-type LinkService interface {
-	CreateLinkId() string
+type LinkServiceInterface interface {
+	CreateLinkId() (string, error)
 	StoreLink(path, link string) (string, error)
-	GetLinkPath(link string) (string, error)
 	GetLinkFromId(path string) (string, error)
 }

@@ -40,3 +40,11 @@ type ErrorFailedRetrieval struct {
 func (e ErrorFailedRetrieval) Error() string {
 	return fmt.Sprintf("failed to retireve the record from the databse. Error: %s", e.Err.Error())
 }
+
+type ErrorIDGenerationFailed struct {
+	Err error
+}
+
+func (e ErrorIDGenerationFailed) Error() string {
+	return fmt.Sprintf("failed to generate unique id. Error: %s", e.Err.Error())
+}
